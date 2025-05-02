@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>❤️ Our Next Adventure ❤️</title>
+<style>
+    body{font-family:system-ui,Segoe UI,Helvetica,Arial;margin:0;padding:0;background:#f8f8fa;color:#222;}
+    h1{text-align:center;padding:.6rem 0;margin:0;background:#f04c78;color:#fff;font-size:1.4rem;}
+    #puzzle{display:grid;grid-template-columns:repeat(auto-fit,minmax(24px,1fr));max-width:480px;margin:1rem auto;border:3px solid #333;}
+    .cell{position:relative;width:100%;padding-top:100%;border:1px solid #999;box-sizing:border-box;background:#fff;}
+    .black{background:#333;border:1px solid #333;}
+    .cell input{position:absolute;inset:0;width:100%;height:100%;border:none;text-align:center;font-size:1.1rem;font-weight:bold;background:transparent;text-transform:uppercase;}
+    .cell input:focus{outline:2px solid #f04c78;}
+    .num{position:absolute;top:1px;left:2px;font-size:.55rem;}
+    #panel{display:flex;flex-wrap:wrap;gap:2rem;max-width:900px;margin:1rem auto;}
+    ol{padding-left:1.6rem;margin:0;}
+    button{margin:.8rem auto;display:block;font-size:1rem;padding:.4rem 1rem;border:none;background:#f04c78;color:#fff;border-radius:4px;cursor:pointer;}
+    button:hover{filter:brightness(110%);}
+</style>
+</head>
+<body>
+<h1>Crossword Surprise 💌</h1>
+
+<div id="puzzle"></div>
+<button id="checkBtn">Check Grid</button>
+
+<div id="panel">
+  <div>
+    <h3>Across ➡️</h3>
+    <ol id="acrossList"></ol>
+  </div>
+  <div>
+    <h3>Down ⬇️</h3>
+    <ol id="downList"></ol>
+  </div>
+</div>
+
+<script>
+/* --------- 1. DEFINE THE PUZZLE STRUCTURE ---------- */
+// Use "#" for a black square, letters for solution (case-insensitive)
+const grid = [
+  "#","#","#","#","#", "#","H","#","#","#", "#","#","V","#","#", "#","#","#","#","#", "#","#","#",
+  "#","#","#","#","#", "#","O","#","#","#", "#","#","A","#","#", "#","C","#","#","D", "#","#","#",
+  "#","#","#","#","#", "#","T","#","#","#", "#","A","L","P","A", "C","A","#","#","U", "#","#","#",
+  "#","#","#","#","#", "#","S","#","#","#", "H","#","L","#","T", "#","R","U","I","N", "S","#","#",
+  "#","#","#","#","#", "#","P","#","#","W", "I","N","E","#","L", "#","R","#","#","E", "#","#","#",
+  "#","P","#","#","F", "#","R","#","K","#", "K","#","Y","#","#", "#","Y","#","#","#", "#","T","#",
+  "#","I","#","A","L", "T","I","T","U","D", "E","#","#","#","B", "#","O","#","M","#", "#","R","#",
+  "#","S","#","#","I", "#","N","#","Z","#", "#","#","#","R","A", "I","N","B","O","W", "#","A","#",
+  "#","C","#","#","G", "#","G","#","C","#", "#","#","#","#","C", "#","#","#","U","#", "#","I","#",
+  "P","O","N","C","H", "O","#","#","O","#", "#","#","#","#","K", "#","#","I","N","C", "A","N","S",
+  "#","#","#","#","T", "#","#","#","#","#", "S","O","L","#","P", "#","#","#","T","#", "#","#","#",
+  "#","#","#","#","#", "#","#","#","#","#", "#","#","I","#","A", "#","#","#","A","#", "#","#","#",
+  "#","#","#","#","#", "#","#","#","#","#", "#","#","M","A","C", "H","U","P","I","C", "C","H","U",
+  "#","#","#","#","#", "#","#","#","#","#", "#","#","A","#","K", "#","#","#","N","#", "#","#","#"
+];           // 13 rows × 25 cols in a single flat array
+const rows = 14, cols = 23;
+
+/* Across: number, clue, answer */
+const across = [
+  [5,  "A hump-less camelid.",             "ALPACA"],
+  [8,  "Ancient stones.",                  "RUINS"],
+  [9,  "What Tacama does best.",           "WINE"],
+  [14, "A sickness alleviated by coca tea.","ALTITUDE"],
+  [17, "Taste the ______.",                "RAINBOW"],
+  [18, "A jacket without armholes.",       "PONCHO"],
+  [19, "Aztecs, Mayans, …",                "INCANS"],
+  [20, "USD with a sunny disposition.",    "SOL"],
+  [22, "Could be a Pokémon.",              "MACHUPICCHU"]
+];
+
+/* Down: number, clue, answer */
+const down = [
+  [1,  "Nature's geothermal love-tub.",    "HOTSPRING"],
+  [2,  "Demarcated by mountains.",         "VALLEY"],
+  [3,  "The only permissible type of luggage.", "CARRYON"],
+  [4,  "A 7-DOWN of sand.",                "DUNE"],
+  [6,  "Departing arpt.",                  "ATL"],
+  [7,  "Take an 'outdoorsy ambulation'.",  "HIKE"],
+  [10, "Brandy.",                          "PISCO"],
+  [11, "Our journey begins with this.",    "FLIGHT"],
+  [12, "Disney's emperor.",                "KUZCO"],
+  [13, "The only form of transportation to Aguas Calientes.", "TRAIN"],
+  [15, "You need one for school.",         "BACKPACK"],
+  [16, "An 8-ACROSS of rock.",             "MOUNTAIN"],
+  [21, "Legume?",                          "LIMA"]
+];
+
+// ============================ SAMPLE PUZZLE FOR DEBUGGING ======================================
+// /* ------------- GRID ------------- */
+// const rows = 3, cols = 4;
+// const grid = [
+//   "C","#","#","S",   // row 0
+//   "A","R","E","A",   // row 1
+//   "T","#","#","M"    // row 2
+// ];
+//
+// /* ------------- ACROSS ----------- */
+// const across = [
+//   [3, "Unit of land measurement (4)","AREA"],
+// ];
+//
+// /* ------------- DOWN ------------- */
+// const down = [
+//   [1, "Household feline (3)",        "CAT"],
+//   [2, "Short for Samual (3)","SAM"],
+// ];
+// ============================ SAMPLE PUZZLE FOR DEBUGGING ======================================
+
+
+/* --------- 2. BUILD THE GRID ---------- */
+const board = document.getElementById('puzzle');
+board.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+
+// helper to convert (r,c) to 1-D index
+const idx = (r,c)=> r*cols+c;
+
+// create cells
+for(let r=0;r<rows;r++){
+  for(let c=0;c<cols;c++){
+    const i = idx(r,c);
+    const ch = grid[i];
+    const div = document.createElement('div');
+    div.className = ch === "#" ? "cell black" : "cell";
+    if(ch !== "#"){
+      const inp = document.createElement('input');
+      inp.maxLength=1;
+      inp.dataset.r = r;
+      inp.dataset.c = c;
+      div.appendChild(inp);
+    }
+    board.appendChild(div);
+  }
+}
+
+/* ---------- Add Keydown event listener --- */
+function moveFocus(r, c, dr, dc){
+  let rr = r + dr, cc = c + dc;
+  while (rr >= 0 && rr < rows && cc >= 0 && cc < cols){
+    if (grid[idx(rr, cc)] !== "#"){   // found a white square
+      getCell(rr, cc).firstChild.focus();
+      return;
+    }
+    rr += dr; cc += dc;               // keep searching in the same direction
+  }
+}
+
+board.addEventListener('keydown', e => {
+  if (!e.target.matches('input')) return;
+
+  const r = +e.target.dataset.r;
+  const c = +e.target.dataset.c;
+
+  if (e.key === 'ArrowUp')  { e.preventDefault(); moveFocus(r, c, -1,  0); }
+  if (e.key === 'ArrowDown'){ e.preventDefault(); moveFocus(r, c,  1,  0); }
+  if (e.key === 'ArrowLeft'){ e.preventDefault(); moveFocus(r, c,  0, -1); }
+  if (e.key === 'ArrowRight'){e.preventDefault(); moveFocus(r, c,  0,  1); }
+});
+
+
+/* ---------- WORD-LENGTH HELPER --- */
+function wordLen(r,c,dr,dc){
+  let L = 0;
+  while (r < rows && c < cols && grid[idx(r,c)] !== "#"){
+    L++;  r += dr;  c += dc;
+  }
+  return L;
+}
+
+/* ---------- NUMBER THE STARTS ---- */
+const getCell = (r,c)=> board.children[idx(r,c)];
+let num = 1;
+for (let r=0;r<rows;r++){
+  for (let c=0;c<cols;c++){
+    if (grid[idx(r,c)] === "#") continue;
+
+    const isStartAcross = (c===0 || grid[idx(r,c-1)] === "#");
+    const isStartDown   = (r===0 || grid[idx(r-1,c)] === "#");
+
+    const lenAcross = isStartAcross ? wordLen(r,c,0,1) : 0;
+    const lenDown   = isStartDown   ? wordLen(r,c,1,0) : 0;
+
+    if ((isStartAcross && lenAcross > 1) ||
+        (isStartDown   && lenDown   > 1)){
+      const label = document.createElement('span');
+      label.textContent = num;
+      label.className   = "num";
+      getCell(r,c).appendChild(label);
+      num++;
+    }
+  }
+}
+
+/* --------- 4. RENDER CLUES ---------- */
+function renderList(arr,target){
+  arr.forEach(([n,clue])=>{
+    const li=document.createElement('li');
+    li.textContent=`${clue}`;
+    li.setAttribute('data-num',n);
+    li.value = n;
+    target.appendChild(li);
+  });
+}
+renderList(across, document.getElementById('acrossList'));
+renderList(down,   document.getElementById('downList'));
+
+/* --------- 5. CHECK ANSWERS ---------- */
+function getAnswer(sequence){
+  return sequence.map(([n,_,ans])=>[n,ans.toUpperCase()]);
+}
+const acrossAns = getAnswer(across);
+const downAns   = getAnswer(down);
+
+document.getElementById('checkBtn').onclick=()=>{
+  const cells=[...board.querySelectorAll('.cell input')];
+  let correct=true;
+  acrossAns.forEach(([n,ans])=>{
+    const coords = findSequence(n,"across");
+    if(coords){
+      const letters = coords.map(([r,c])=>{
+        const inp= getCell(r,c).firstChild;
+        return inp.value.toUpperCase()||" ";
+      }).join("");
+      if(letters!==ans) correct=false;
+    }
+  });
+  downAns.forEach(([n,ans])=>{
+    const coords = findSequence(n,"down");
+    if(coords){
+      const letters = coords.map(([r,c])=>{
+        const inp= getCell(r,c).firstChild;
+        return inp.value.toUpperCase()||" ";
+      }).join("");
+      if(letters!==ans) correct=false;
+    }
+  });
+  alert(correct? "✨ Perfect! Open your surprise… ✨" : "Almost! Keep trying 😊");
+};
+
+/* Utility: find the coordinates for a numbered clue */
+function findSequence(number,dir){
+  let count=1;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(grid[idx(r,c)]==="#") continue;
+      const startAcross=(c===0||grid[idx(r,c-1)]==="#");
+      const startDown =(r===0||grid[idx(r-1,c)]==="#");
+      if((dir==="across"&&startAcross)||(dir==="down"&&startDown)){
+        if(count===number){
+          const coords=[];
+          if(dir==="across"){
+            for(let cc=c;cc<cols && grid[idx(r,cc)]!=="#";cc++) coords.push([r,cc]);
+          }else{
+            for(let rr=r;rr<rows && grid[idx(rr,c)]!=="#";rr++) coords.push([rr,c]);
+          }
+          return coords;
+        }
+        count++;
+      }
+    }
+  }
+  return null;
+}
+
+</script>
+</body>
+</html>
