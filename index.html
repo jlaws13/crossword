@@ -16,6 +16,13 @@
     ol{padding-left:1.6rem;margin:0;}
     button{margin:.8rem auto;display:block;font-size:1rem;padding:.4rem 1rem;border:none;background:#f04c78;color:#fff;border-radius:4px;cursor:pointer;}
     button:hover{filter:brightness(110%);}
+
+/* red background for wrong squares */
+input.wrong {
+  background: #ffe6e6;          /* light red */
+  color: #c00;                  /* dark red text */
+}
+
 </style>
 </head>
 <body>
@@ -211,30 +218,28 @@ function getAnswer(sequence){
 const acrossAns = getAnswer(across);
 const downAns   = getAnswer(down);
 
-document.getElementById('checkBtn').onclick=()=>{
-  const cells=[...board.querySelectorAll('.cell input')];
-  let correct=true;
-  acrossAns.forEach(([n,ans])=>{
-    const coords = findSequence(n,"across");
-    if(coords){
-      const letters = coords.map(([r,c])=>{
-        const inp= getCell(r,c).firstChild;
-        return inp.value.toUpperCase()||" ";
-      }).join("");
-      if(letters!==ans) correct=false;
+document.getElementById('checkBtn').onclick = () => {
+  let allCorrect = true;
+
+  /* 1. clear previous highlights */
+  board.querySelectorAll('input').forEach(inp => inp.classList.remove('wrong'));
+
+  /* 2. walk every input, compare to the master grid */
+  board.querySelectorAll('input').forEach((inp, idx1d) => {
+    const correct = grid[idx1d].toUpperCase();    // true letter for this square
+    const guess   = inp.value.toUpperCase();
+
+    if (guess && guess !== correct) {             // non‑blank & wrong
+      inp.classList.add('wrong');                 // highlight it
+      allCorrect = false;
     }
+    if (!guess) allCorrect = false;               // blank squares → not done
   });
-  downAns.forEach(([n,ans])=>{
-    const coords = findSequence(n,"down");
-    if(coords){
-      const letters = coords.map(([r,c])=>{
-        const inp= getCell(r,c).firstChild;
-        return inp.value.toUpperCase()||" ";
-      }).join("");
-      if(letters!==ans) correct=false;
-    }
-  });
-  alert(correct? "✨ Perfect! Open your surprise… ✨" : "Almost! Keep trying 😊");
+
+  /* 3. pop the message */
+  alert(allCorrect
+        ? "✨ Perfect! Open your surprise… ✨"
+        : "Some letters are off—red squares show what to fix!");
 };
 
 /* Utility: find the coordinates for a numbered clue */
