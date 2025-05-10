@@ -41,6 +41,22 @@ input.wrong {
     <ol id="downList"></ol>
   </div>
 </div>
+<!-- Hidden surprise -->
+<div id="itinerary"
+     style="display:none; padding:1.5rem; max-width:700px; margin:2rem auto;
+            background:#fff; border:3px solid #f04c78; border-radius:8px;">
+  <h2>🎉 Our Next Adventure!</h2>
+
+  <p><strong>📍 Day 1 – Arrival in Lima:</strong> ✈️ Land 9:30 PM, 🚗 transfer to Miraflores/Barranco hotel.</p>
+  <p><strong>🎨 Day 2 – Lima → Cusco → Ollantaytambo:</strong> 🖼️ Morning museum, ✈️ 5:55 PM flight, 🚗 to Ollanta.</p>
+  <p><strong>🚆 Day 3 – Aguas Calientes & Machu Picchu:</strong> 🚞 Train, 🏛️ 3 PM tour, 🌌 overnight in AC.</p>
+  <p><strong>🏔️ Day 4 – Sacred Valley → Cusco:</strong> 🌀 Moray, ⛏️ Maras Salt Mines, 🏙️ evening in Cusco.</p>
+  <p><strong>🌈 Day 5 – Rainbow Mountain:</strong> 🌅 Early start, ⛰️ hike Vinicunca, 💤 rest in Cusco.</p>
+  <p><strong>✈️ Day 6 – Cusco → Lima:</strong> ☕ Leisure morning, ✈️ 5:40 PM flight, 🕖 arrive 7:10 PM.</p>
+  <p><strong>🍷 Day 7 – Tacama Winery:</strong> 🚗 Day-trip to Ica, 🍇 tasting & vineyard tour.</p>
+  <p><strong>🎨 Day 8 – Lima Leisure Day:</strong> 🌊 Malecón walk, 🖼️ Barranco art, 🍽️ celebratory dinner.</p>
+  <p><strong>👋 Day 9 – Departure:</strong> ☀️ Free morning, ✈️ 9:30 PM flight home.</p>
+</div>
 
 <script>
 /* --------- 1. DEFINE THE PUZZLE STRUCTURE ---------- */
@@ -225,47 +241,34 @@ document.getElementById('checkBtn').onclick = () => {
   board.querySelectorAll('input').forEach(inp => inp.classList.remove('wrong'));
 
   /* 2. walk every input, compare to the master grid */
-  board.querySelectorAll('input').forEach((inp, idx1d) => {
-    const correct = grid[idx1d].toUpperCase();    // true letter for this square
-    const guess   = inp.value.toUpperCase();
+board.querySelectorAll('input').forEach(inp => {
+  const r = +inp.dataset.r;                    // row from data-attr
+  const c = +inp.dataset.c;                    // col from data-attr
+  const correct = grid[idx(r, c)].toUpperCase();   // exact square
+  const guess   = inp.value.toUpperCase();
 
-    if (guess && guess !== correct) {             // non‑blank & wrong
-      inp.classList.add('wrong');                 // highlight it
-      allCorrect = false;
-    }
-    if (!guess) allCorrect = false;               // blank squares → not done
-  });
-
-  /* 3. pop the message */
-  alert(allCorrect
-        ? "✨ Perfect! Open your surprise… ✨"
-        : "Some letters are off—red squares show what to fix!");
-};
-
-/* Utility: find the coordinates for a numbered clue */
-function findSequence(number,dir){
-  let count=1;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      if(grid[idx(r,c)]==="#") continue;
-      const startAcross=(c===0||grid[idx(r,c-1)]==="#");
-      const startDown =(r===0||grid[idx(r-1,c)]==="#");
-      if((dir==="across"&&startAcross)||(dir==="down"&&startDown)){
-        if(count===number){
-          const coords=[];
-          if(dir==="across"){
-            for(let cc=c;cc<cols && grid[idx(r,cc)]!=="#";cc++) coords.push([r,cc]);
-          }else{
-            for(let rr=r;rr<rows && grid[idx(rr,c)]!=="#";rr++) coords.push([rr,c]);
-          }
-          return coords;
-        }
-        count++;
-      }
-    }
+  if (guess && guess !== correct) {
+    inp.classList.add('wrong');
+    allCorrect = false;
+  } else if (!guess) {
+    allCorrect = false;          // still blank → puzzle not solved yet
   }
-  return null;
-}
+});
+
+
+  /* 3. show result */
+  if (allCorrect) {
+    /* hide puzzle, button, clues */
+    board.style.display                     = "none";
+    document.getElementById('checkBtn').style.display = "none";
+    document.getElementById('panel').style.display    = "none";
+
+    /* reveal itinerary */
+    document.getElementById('itinerary').style.display = "block";
+  } else {
+    alert("Some letters are off—red squares show what to fix!");
+  }
+  };
 
 </script>
 </body>
