@@ -9,7 +9,7 @@
     #puzzle{display:grid;grid-template-columns:repeat(auto-fit,minmax(24px,1fr));max-width:480px;margin:1rem auto;border:3px solid #333;}
     .cell{position:relative;width:100%;padding-top:100%;border:1px solid #999;box-sizing:border-box;background:#fff;}
     .black{background:#333;border:1px solid #333;}
-    .cell input{position:absolute;inset:0;width:100%;height:100%;border:none;text-align:center;font-size:1.1rem;font-weight:bold;background:transparent;text-transform:uppercase;}
+    .cell input{position:absolute; inset:0;display:flex;justify-content:center;align-items:center;width:100%; height:100%;border:none;text-align:center;font-size:1.1rem;font-weight:bold;background:transparent;text-transform:uppercase;}
     .cell input:focus{outline:2px solid #f04c78;}
     .num{position:absolute;top:1px;left:2px;font-size:.55rem;}
     #panel{display:flex;flex-wrap:wrap;gap:2rem;max-width:900px;margin:1rem auto;}
